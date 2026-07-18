@@ -1,125 +1,87 @@
-USE caprocam;
+USE laboratorio_comunicacion;
 
-INSERT INTO grupos_datos (
-    codigo,
-    nombre,
-    descripcion,
-    acceso_global
-)
+-- SOLICITUDES
+
+INSERT INTO solicitudes
+(nombre_cliente,correo,asunto,descripcion,estado)
 VALUES
+
 (
-    1,
-    'Grupo Demo Finca',
-    'Grupo de datos demo para pruebas de finca',
-    FALSE
+'Juan Pérez',
+'juan@gmail.com',
+'Problema con impresora',
+'La impresora no enciende.',
+'Pendiente'
 ),
+
 (
-    99,
-    'Caprocam Demo',
-    'Grupo demo con acceso global para pruebas internas',
-    TRUE
+'Ana Rodríguez',
+'ana@gmail.com',
+'Error en sistema',
+'No puedo ingresar al sistema.',
+'Asignada'
+),
+
+(
+'Carlos Gómez',
+'carlos@gmail.com',
+'Internet lento',
+'La conexión es muy lenta.',
+'En proceso'
+),
+
+(
+'María López',
+'maria@gmail.com',
+'Pantalla azul',
+'La computadora muestra pantalla azul.',
+'Finalizada'
+),
+
+(
+'Luis Vargas',
+'luis@gmail.com',
+'Cuenta bloqueada',
+'No puedo ingresar porque mi cuenta fue bloqueada.',
+'Cancelada'
 );
 
-INSERT INTO roles (
-    nombre,
-    descripcion,
-    acceso_global
-)
+-- MENSAJES
+
+INSERT INTO mensajes
+(solicitud_id,emisor,mensaje)
 VALUES
+
+(1,'Cliente','Buenos días.'),
+
+(1,'Tecnico','Buenos días, revisaremos su caso.'),
+
+(2,'Cliente','Necesito ayuda urgente.'),
+
+(2,'Tecnico','Su solicitud fue asignada a un técnico.'),
+
+(3,'Cliente','Sigue muy lento.'),
+
+(3,'Tecnico','Estamos realizando pruebas.'),
+
+(4,'Cliente','Muchas gracias por la ayuda.'),
+
+(4,'Tecnico','Con gusto.');
+
+-- EVALUACIONES
+
+INSERT INTO evaluaciones
+(solicitud_id,calificacion,comentario)
+VALUES
+
 (
-    'admin_caprocam',
-    'Administrador interno de Caprocam con acceso global',
-    TRUE
+4,
+5,
+'Excelente atención.'
 ),
+
 (
-    'dueno_finca',
-    'Usuario web propietario o administrador de finca',
-    FALSE
-),
-(
-    'colaborador_movil',
-    'Colaborador que ingresa desde la app movil con PIN',
-    FALSE
+5,
+3,
+'El problema no pudo resolverse.'
 );
-
-INSERT INTO usuarios (
-    grupo_datos,
-    rol_id,
-    nombre,
-    apellidos,
-    email,
-    nombre_usuario,
-    password_hash,
-    telefono
-)
-SELECT
-    1,
-    r.id,
-    'Usuario',
-    'Demo',
-    'usuario.demo@caprocam.test',
-    'usuario_demo',
-    '$2b$10$hashdemonoesrealcambiarendbackend',
-    '88888888'
-FROM roles r
-WHERE r.nombre = 'dueno_finca';
-
-INSERT INTO fincas (
-    grupo_datos,
-    propietario_usuario_id,
-    codigo_cbo,
-    nombre_finca,
-    provincia,
-    canton,
-    distrito,
-    otras_senas,
-    propietario_responsable,
-    telefono,
-    area_total,
-    espejos_agua
-)
-SELECT
-    1,
-    u.id,
-    'CBO-DEMO',
-    'Finca Demo',
-    'Guanacaste',
-    'Cañas',
-    'Cañas',
-    'Ubicacion demo',
-    'Usuario Demo',
-    '88888888',
-    100.00,
-    25.00
-FROM usuarios u
-WHERE u.email = 'usuario.demo@caprocam.test';
-
-INSERT INTO estanques (
-    grupo_datos,
-    finca_id,
-    codigo,
-    tipo_estanque,
-    estado,
-    largo,
-    ancho,
-    profundidad,
-    fuente_agua,
-    especie,
-    fecha_siembra,
-    densidad_siembra
-)
-SELECT
-    1,
-    f.id,
-    'EST-001',
-    'Engorde',
-    'Activo',
-    100.00,
-    80.00,
-    1.20,
-    'Pozo',
-    'Litopenaeus vannamei - Camaron blanco',
-    '2026-07-02',
-    12.00
-FROM fincas f
-WHERE f.nombre_finca = 'Finca Demo';
