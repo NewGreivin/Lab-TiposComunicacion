@@ -1,16 +1,18 @@
 import express from "express";
 import cors from "cors";
 
-//import colaboradoresRouter from './routes/colaborador.routes.js';
+import solicitudesRouter    from './routes/solicitudes.routes.js';
+import mensajesRouter       from './routes/mensajes.routes.js';
+import evaluacionesRouter   from './routes/evaluaciones.routes.js';
 
-const PORT = 4000;
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-//app.use('/api/v0/colaboradores', colaboradoresRouter);
-
+app.use('/api/v0/solicitudes', solicitudesRouter);
+app.use('/api/v0/mensajes', mensajesRouter);
+app.use('/api/v0/evaluaciones', evaluacionesRouter);
 
 app.get("/", (req, res) => {
     res.json({
