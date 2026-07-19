@@ -10,6 +10,7 @@ import {
 
 const router = Router();
 
+router.get("/eventos", solicitudesController.streamEventos);
 
 router.get(   "/",            solicitudesController.obtenerTodas);
 router.get(   "/:id",         validarId, solicitudesController.obtenerPorId);

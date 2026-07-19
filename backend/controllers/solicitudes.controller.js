@@ -1,3 +1,4 @@
+import { conectarCliente, emitirEvento } from "../common/sseManager.js";
 import { registrarEspera, removerCliente, notificarCambio } from "../common/longPolling.js";
 import solicitudesService from "../services/solicitudes.service.js";
 import { 
@@ -90,7 +91,13 @@ class SolicitudesController {
                 actualizarEstadoDto(req.body).estado
             );
 
-            notificarCambio(req.params.id, solicitud);
+            notificarCambio(req.params.id, solicitud); //Etapa 4
+
+            emitirEvento("cambio-estado", {            //Etapa 5
+                id: solicitud.id,
+                estado: solicitud.estado,
+                asunto: solicitud.asunto
+            });
 
             return res.status(200).json({
                 ok: true,
@@ -160,10 +167,14 @@ class SolicitudesController {
             removerCliente(client.id);
         });
 
-    } catch (error) {
-        return res.status(404).json({ ok: false, mensaje: error.message });
+        } catch (error) {
+            return res.status(404).json({ ok: false, mensaje: error.message });
+        }
     }
-}
+
+    static async streamEventos(req, res) {
+        conectarCliente(req, res);
+    }
 }
 
 export default SolicitudesController;

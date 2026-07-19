@@ -12,10 +12,8 @@ export const useSolicitudes = () => {
 
       const data = await solicitudesService.obtenerTodas();
 
-      // Nos permite que se actualice la información obtenida
       setSolicitudes(data);
 
-      // Se quita el loading la primera vez
       setCargando(false);
     
     } catch (err) {
@@ -25,15 +23,7 @@ export const useSolicitudes = () => {
   }, []);
 
   useEffect(() => {
-    // Primera carga
     cargar();
-
-    // Polling cada 10 segundos
-    const intervalo = setInterval(() => {
-      cargar();
-    }, 10000);
-
-    return () => clearInterval(intervalo);
   }, [cargar]);
 
   return { 
