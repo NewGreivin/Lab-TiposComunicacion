@@ -8,21 +8,38 @@ export const useSolicitudes = () => {
   const [error, setError] = useState(null);
 
   const cargar = useCallback(async () => {
-    setCargando(true);
-    setError(null);
     try {
+
       const data = await solicitudesService.obtenerTodas();
+
+      // Nos permite que se actualice la información obtenida
       setSolicitudes(data);
+
+      // Se quita el loading la primera vez
+      setCargando(false);
+    
     } catch (err) {
       setError(getErrorMessage(err));
-    } finally {
       setCargando(false);
-    }
+    } 
   }, []);
 
   useEffect(() => {
+    // Primera carga
     cargar();
+
+    // Polling cada 10 segundos
+    const intervalo = setInterval(() => {
+      cargar();
+    }, 10000);
+
+    return () => clearInterval(intervalo);
   }, [cargar]);
 
-  return { solicitudes, cargando, error, recargar: cargar };
+  return { 
+    solicitudes, 
+    cargando, 
+    error, 
+    recargar: cargar 
+  };
 };
