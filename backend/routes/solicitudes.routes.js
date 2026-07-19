@@ -18,4 +18,6 @@ router.put(   "/:id",         validarId, validarActualizar, solicitudesControlle
 router.patch( "/:id/estado",  validarId, validarEstado, solicitudesController.actualizarEstado);
 router.delete("/:id",         validarId, solicitudesController.eliminar);
 
+router.get("/:id/esperar-cambio", validarId, solicitudesController.esperarCambioEstado);
+
 export default router;

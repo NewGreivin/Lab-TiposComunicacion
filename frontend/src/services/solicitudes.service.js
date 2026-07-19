@@ -48,6 +48,15 @@ const solicitudesService = {
     return data;
   },
 
+  // GET /api/v0/solicitudes/:id/esperar-cambio
+  esperarCambioEstado: async (id, estadoConocido, signal) => {
+    const { data } = await api.get(`${RESOURCE}/${id}/esperar-cambio`, {
+      params: { estadoConocido }, 
+      signal,                 
+    });
+    return data;
+  },
+
   // DELETE /api/v0/solicitudes/:id
   eliminar: async (id) => {
     const { data } = await api.delete(`${RESOURCE}/${id}`);

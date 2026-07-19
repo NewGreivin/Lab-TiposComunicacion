@@ -1,3 +1,4 @@
+import { registrarEspera, removerCliente, notificarCambio } from "../common/longPolling.js";
 import solicitudesService from "../services/solicitudes.service.js";
 import { 
     crearSolicitudDto, 
@@ -89,6 +90,8 @@ class SolicitudesController {
                 actualizarEstadoDto(req.body).estado
             );
 
+            notificarCambio(req.params.id, solicitud);
+
             return res.status(200).json({
                 ok: true,
                 mensaje: "Estado actualizado correctamente.",
@@ -121,6 +124,46 @@ class SolicitudesController {
             });
         }
     }
+
+    static async esperarCambioEstado(req, res) {
+    const { id } = req.params;
+    const estadoConocido = req.query.estadoConocido ?? null;
+
+    try {
+        //Revisa si ya cambio de la ultima vez. 
+        const solicitud = await solicitudesService.obtenerPorId(id);
+
+        if (solicitud.estado !== estadoConocido) {
+            return res.json({
+                ok: true,
+                timeout: false,
+                data: solicitud
+            });
+        }
+
+        //Si no ha cambiado se queda en espera. 
+        const client = registrarEspera(id, estadoConocido, res);
+
+        const timeoutId = setTimeout(() => {
+            removerCliente(client.id);
+            if (!res.headersSent) {
+                res.json({
+                    ok: true,
+                    timeout: true,
+                    data: null
+                });
+            }
+        }, 25000);
+
+        req.on("close", () => {
+            clearTimeout(timeoutId);
+            removerCliente(client.id);
+        });
+
+    } catch (error) {
+        return res.status(404).json({ ok: false, mensaje: error.message });
+    }
+}
 }
 
 export default SolicitudesController;
