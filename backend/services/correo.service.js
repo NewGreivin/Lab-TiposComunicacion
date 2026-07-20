@@ -45,7 +45,7 @@ async function generarQR(solicitud) {
 
 // rellena la plantilla con los datos de la solicitud
 async function generarContenidoCorreo(solicitud, titulo, esNueva = false) {
-    const agregarQr = await generarQR(solicitud);
+    const qr = await generarQR(solicitud);
 
     const datos = {
         titulo,
@@ -55,7 +55,7 @@ async function generarContenidoCorreo(solicitud, titulo, esNueva = false) {
         asunto: solicitud.asunto,
         estado: solicitud.estado,
         fecha: new Date().toLocaleString("es-CR"),
-        agregarQr,
+        qr,
         enlaceConsultar: `${urlFrontend}/solicitudes/${solicitud.id}`,
         enlaceConfirmar: `${urlFrontend}/solicitudes/${solicitud.id}?accion=confirmar`,
         enlaceCancelar: `${urlFrontend}/solicitudes/${solicitud.id}?accion=cancelar`,
