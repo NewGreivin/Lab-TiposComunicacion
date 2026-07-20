@@ -9,12 +9,12 @@ dotenv.config();
 // nodemailer usa esto para autenticarse contra el servidor SMTP
 // y despues poder llamar a transportador.sendMail(...)
 const transportador = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD
-  }
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
+    }
 });
 
 const urlFrontend = process.env.URL_FRONTEND || 'http://localhost:5173';
@@ -41,6 +41,26 @@ function botonRecibido(idSolicitud, esNueva) {
 async function generarQR(solicitud) {
     const url = `${urlFrontend}/solicitudes/${solicitud.id}`;
     return await QRCode.toDataURL(url);
+}
+
+// Reto 3: genera un archivo de texto plano con el resumen de la solicitud
+// para adjuntarlo al correo (no requiere ninguna libreria extra).
+function generarAdjuntoResumen(solicitud, titulo) {
+    const contenido =
+        `SmartNotify Solutions
+${titulo}
+
+Solicitud N°: ${solicitud.id}
+Cliente: ${solicitud.nombre_cliente}
+Correo: ${solicitud.correo}
+Asunto: ${solicitud.asunto}
+Estado actual: ${solicitud.estado}
+Fecha: ${new Date().toLocaleString("es-CR")}
+${solicitud.descripcion ? `\nDescripcion:\n${solicitud.descripcion}` : ""}
+
+Este documento fue generado automaticamente por SmartNotify Solutions.`;
+
+    return Buffer.from(contenido, 'utf-8');
 }
 
 // rellena la plantilla con los datos de la solicitud
@@ -80,7 +100,13 @@ async function enviarCorreoSolicitud(solicitud, esNueva = false) {
         from: process.env.SMTP_FROM,
         to: solicitud.correo,
         subject: `${titulo} - Solicitud #${solicitud.id}`,
-        html: await generarContenidoCorreo(solicitud, titulo, esNueva)
+        html: await generarContenidoCorreo(solicitud, titulo, esNueva),
+        attachments: [
+            {
+                filename: `solicitud_${solicitud.id}.txt`,
+                content: generarAdjuntoResumen(solicitud, titulo)
+            }
+        ]
     });
 }
 
