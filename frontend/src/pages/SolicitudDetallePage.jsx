@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 import { useSolicitud } from "../hooks/useSolicitud";
-import { useMensajes } from "../hooks/useMensajes";
+import { useMensajesChat } from "../hooks/useMensajesChat";
 import { useEvaluacion } from "../hooks/useEvaluacion";
 
 import EstadoBadge from "../components/EstadoBadge";
@@ -23,7 +23,13 @@ const SolicitudDetallePage = () => {
   const navigate = useNavigate();
 
   const { solicitud, cargando, error, actualizarEstado } = useSolicitud(id);
-  const { mensajes, cargando: cargandoMensajes, enviando: enviandoMensaje, enviarMensaje } = useMensajes(id);
+  const {
+    mensajes,
+    cargando: cargandoMensajes,
+    enviando: enviandoMensaje,
+    conectado: chatConectado,
+    enviarMensaje
+  } = useMensajesChat(id);
   const { evaluacion, crearEvaluacion } = useEvaluacion(id);
 
   const [errorAccion, setErrorAccion] = useState(null);
@@ -79,7 +85,12 @@ const SolicitudDetallePage = () => {
 
       <div className="card mb-3">
         <div className="card-body">
-          <h5 className="card-title mb-3">Chat de la solicitud</h5>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="card-title mb-0">Chat de la solicitud</h5>
+            <span className={`badge ${chatConectado ? "bg-success" : "bg-secondary"}`}>
+              {chatConectado ? "En línea" : "Conectando..."}
+            </span>
+          </div>
           {cargandoMensajes ? (
             <LoadingSpinner texto="Cargando mensajes..." />
           ) : (
