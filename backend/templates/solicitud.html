@@ -1,0 +1,122 @@
+<style>
+    .snf-card {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #dddddd;
+        border-radius: 8px;
+        padding: 24px;
+        background-color: #ffffff;
+    }
+
+    .snf-header {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 10px;
+        margin-top: 0;
+    }
+
+    .snf-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        color: #333333;
+        margin-top: 12px;
+    }
+
+    .snf-table td {
+        padding: 5px 0;
+    }
+
+    .snf-table td:first-child {
+        width: 140px;
+    }
+
+    .snf-qr-box {
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 16px;
+        margin-top: 20px;
+    }
+
+    .snf-qr-box p {
+        font-size: 13px;
+        color: #666666;
+        margin: 0 0 10px 0;
+    }
+
+    .snf-botones {
+        text-align: center;
+        margin-top: 22px;
+    }
+
+    .snf-footer {
+        text-align: center;
+        font-size: 11px;
+        color: #aaaaaa;
+        margin-top: 24px;
+        margin-bottom: 0;
+    }
+
+    /* Todos los botones usan el mismo color de marca. */
+    .btn {
+        display: inline-block;
+        padding: 9px 16px;
+        margin: 4px;
+        background-color: #0d6efd;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+</style>
+
+<div class="snf-card">
+
+    <h2 class="snf-header">{{titulo}}</h2>
+
+    <table class="snf-table">
+        <tr>
+            <td><strong>Solicitud N°:</strong></td>
+            <td>{{id}}</td>
+        </tr>
+        <tr>
+            <td><strong>Cliente:</strong></td>
+            <td>{{cliente}}</td>
+        </tr>
+        <tr>
+            <td><strong>Correo:</strong></td>
+            <td>{{correo}}</td>
+        </tr>
+        <tr>
+            <td><strong>Asunto:</strong></td>
+            <td>{{asunto}}</td>
+        </tr>
+        <tr>
+            <td><strong>Estado actual:</strong></td>
+            <td>{{estado}}</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha:</strong></td>
+            <td>{{fecha}}</td>
+        </tr>
+    </table>
+
+    <div class="snf-qr-box">
+        <p>Escanea el codigo para abrir tu solicitud</p>
+        <img src="{{qr}}" alt="Codigo QR de la solicitud" width="120" height="120" />
+    </div>
+
+    <div class="snf-botones">
+        {{boton_recibido}}
+        <a href="{{enlaceConsultar}}" class="btn">Consultar estado</a>
+        <a href="{{enlaceCancelar}}" class="btn">Cancelar solicitud</a>
+        <a href="{{enlaceConfirmar}}" class="btn">Confirmar solucion</a>
+        <a href="{{enlaceFormulario}}" class="btn">Completar formulario</a>
+    </div>
+
+    <p class="snf-footer">
+        Este es un correo automatico, por favor no respondas a este mensaje.
+    </p>
+</div>
