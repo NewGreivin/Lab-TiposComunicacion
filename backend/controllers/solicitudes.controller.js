@@ -1,6 +1,7 @@
 import { conectarCliente, emitirEvento } from "../common/sseManager.js";
 import { registrarEspera, removerCliente, notificarCambio } from "../common/longPolling.js";
 import solicitudesService from "../services/solicitudes.service.js";
+import correoService from "../services/correo.service.js";
 import { 
     crearSolicitudDto, 
     actualizarSolicitudDto, 
@@ -46,6 +47,12 @@ class SolicitudesController {
     static async crear(req, res) {
         try {
             const solicitud = await solicitudesService.crear(crearSolicitudDto(req.body));
+
+            try {
+                await correoService.enviarCorreoSolicitud(solicitud, true); // Correo de creacion (incluye "Confirmar recepcion")
+            } catch (errorCorreo) {
+                console.error("Error no se pudo enviar el correo:", errorCorreo.message);
+            }
 
             return res.status(201).json({
                 ok: true,
@@ -98,6 +105,12 @@ class SolicitudesController {
                 estado: solicitud.estado,
                 asunto: solicitud.asunto
             });
+
+            try {
+                await correoService.enviarCorreoSolicitud(solicitud); // Envia el correo segun el nuevo estado
+            } catch (errorCorreo) {
+                console.error("Error no se pudo enviar el correo:", errorCorreo.message);
+            }
 
             return res.status(200).json({
                 ok: true,
