@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 
 import { useSolicitud } from "../hooks/useSolicitud";
 import { useMensajes } from "../hooks/useMensajes";
@@ -21,12 +21,81 @@ import { getErrorMessage } from "../utils/getErrorMessage";
 const SolicitudDetallePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { solicitud, cargando, error, actualizarEstado } = useSolicitud(id);
   const { mensajes, cargando: cargandoMensajes, enviando: enviandoMensaje, enviarMensaje } = useMensajes(id);
   const { evaluacion, crearEvaluacion } = useEvaluacion(id);
 
   const [errorAccion, setErrorAccion] = useState(null);
+  const [mensajeAccion, setMensajeAccion] = useState(null);
+
+  // Referencia a la tarjeta de evaluacion, para poder hacer scroll hasta ahi
+  const evaluacionRef = useRef(null);
+
+  // Evita que la accion se vuelva a ejecutar por re-renders.
+  const accionProcesadaRef = useRef(false);
+
+  useEffect(() => {
+    const accion = searchParams.get("accion");
+    if (!accion || accionProcesadaRef.current) return;
+
+    if (cargando) return;
+
+    accionProcesadaRef.current = true;
+
+    searchParams.delete("accion");
+    setSearchParams(searchParams, { replace: true });
+
+    const ejecutarAccion = async () => {
+      // El cliente confirma que recibio la notificacion de su solicitud.
+      // Ademas de informarlo, esto marca la solicitud como Asignada.
+      if (accion === "recibido") {
+        if (solicitud?.estado === "Pendiente") {
+          try {
+            await actualizarEstado("Asignada");
+            window.alert("Gracias por confirmar. Hemos registrado que recibiste tu solicitud.");
+          } catch (err) {
+            setErrorAccion(getErrorMessage(err));
+            window.alert(getErrorMessage(err));
+          }
+        } else {
+          window.alert("Esta solicitud ya fue confirmada anteriormente.");
+        }
+      }
+
+      // El cliente confirma que su problema ya fue resuelto
+      if (accion === "confirmar") {
+        const deseaConfirmar = window.confirm("¿Confirmas que tu problema fue resuelto?");
+        if (deseaConfirmar) {
+          try {
+            await actualizarEstado("Finalizada");
+            setMensajeAccion("Gracias por confirmar. La solicitud fue marcada como finalizada.");
+          } catch (err) {
+            setErrorAccion(getErrorMessage(err));
+          }
+        }
+      }
+
+      if (accion === "cancelar") {
+        const deseaCancelar = window.confirm("¿Deseas cancelar esta solicitud?");
+        if (deseaCancelar) {
+          try {
+            await actualizarEstado("Cancelada");
+            setMensajeAccion("La solicitud fue cancelada correctamente.");
+          } catch (err) {
+            setErrorAccion(getErrorMessage(err));
+          }
+        }
+      }
+
+      if (accion === "formulario") {
+        evaluacionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    };
+
+    ejecutarAccion();
+  }, [cargando]);
 
   const handleEliminar = async () => {
     if (!window.confirm("¿Seguro que deseas eliminar esta solicitud?")) return;
