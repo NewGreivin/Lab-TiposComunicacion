@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import solicitudesService from "../services/solicitudes.service";
+import { WS_MENSAJES_URL } from "../constans/api.constans";
 import { getErrorMessage } from "../utils/getErrorMessage";
 
 export const useSolicitud = (id) => {
@@ -24,42 +25,31 @@ export const useSolicitud = (id) => {
     if (!id) return;
 
     let active = true;
-    const controller = new AbortController();
-    let estadoConocido = null;
+    const socket = new WebSocket(`${WS_MENSAJES_URL}?idSolicitud=${id}`);
 
-    async function iniciarLongPolling() {
-      while (active) {
-        try {
-          const data = await solicitudesService.esperarCambioEstado(
-            id,
-            estadoConocido,
-            controller.signal
-          );
+    socket.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
 
-          if (!active) break;
-
-          if (data.data) {
-            setSolicitud(data.data);
-            estadoConocido = data.data.estado;
-          }
-
-        } catch (err) {
-          if (err.name === "AbortError" || !active) break;
-
-          console.log("Error long polling:", err);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+        if (payload.tipo === "cambio-estado" && payload.data && active) {
+          setSolicitud(payload.data);
         }
+      } catch (err) {
+        console.error("Mensaje WebSocket inválido:", err);
       }
-    }
+    };
 
-    cargar().then((data) => {
-      estadoConocido = data?.estado ?? null;
-      iniciarLongPolling();
-    });
+    socket.onerror = () => {
+      if (active) {
+        console.warn("No se pudo establecer la actualización de estado por WebSocket.");
+      }
+    };
+
+    cargar();
 
     return () => {
       active = false;
-      controller.abort();
+      socket.close();
     };
 
   }, [id, cargar]);

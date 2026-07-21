@@ -29,7 +29,9 @@ const SolicitudDetallePage = () => {
     cargando: cargandoMensajes,
     enviando: enviandoMensaje,
     conectado: chatConectado,
-    enviarMensaje
+    enviarMensaje,
+    usuarioEscribiendo,
+    informarEscribiendo
   } = useMensajesChat(id);
   const { evaluacion, crearEvaluacion } = useEvaluacion(id);
 
@@ -165,7 +167,14 @@ const SolicitudDetallePage = () => {
           ) : (
             <ListaMensajes mensajes={mensajes} />
           )}
-          <EnviarMensajeForm onEnviar={enviarMensaje} enviando={enviandoMensaje} />
+          {usuarioEscribiendo === "Tecnico" && (
+            <p className="text-muted small mb-2">Técnico escribiendo...</p>
+          )}
+          <EnviarMensajeForm
+            onEnviar={enviarMensaje}
+            onEscribiendo={informarEscribiendo}
+            enviando={enviandoMensaje}
+          />
         </div>
       </div>
 

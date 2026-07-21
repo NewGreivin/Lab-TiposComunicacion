@@ -9,8 +9,11 @@ export const useMensajesChat = (idSolicitud) => {
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const [conectado, setConectado] = useState(false);
+  const [usuarioEscribiendo, setUsuarioEscribiendo] = useState(null);
 
   const socketRef = useRef(null);
+  const typingTimerRef = useRef(null);
+  const emisorLocalRef = useRef(null);
 
   const cargarHistorial = useCallback(async () => {
     setCargando(true);
@@ -42,6 +45,13 @@ export const useMensajesChat = (idSolicitud) => {
         setMensajes((prev) => [...prev, payload.data]);
       }
 
+      if (
+        payload.tipo === "escribiendo" &&
+        payload.emisor !== emisorLocalRef.current
+      ) {
+        setUsuarioEscribiendo(payload.escribiendo ? payload.emisor : null);
+      }
+
       if (payload.tipo === "error") {
         setError(payload.mensaje);
       }
@@ -54,10 +64,47 @@ export const useMensajesChat = (idSolicitud) => {
     socket.onclose = () => setConectado(false);
 
     return () => {
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+      }
+
       socket.close();
       socketRef.current = null;
+      setUsuarioEscribiendo(null);
     };
   }, [idSolicitud, cargarHistorial]);
+
+  const informarEscribiendo = ({ emisor, escribiendo }) => {
+    emisorLocalRef.current = emisor;
+
+    const socket = socketRef.current;
+
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        tipo: "escribiendo",
+        emisor,
+        escribiendo
+      }));
+    }
+
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+
+    if (escribiendo) {
+      typingTimerRef.current = setTimeout(() => {
+        const socketActivo = socketRef.current;
+
+        if (socketActivo?.readyState === WebSocket.OPEN) {
+          socketActivo.send(JSON.stringify({
+            tipo: "escribiendo",
+            emisor,
+            escribiendo: false
+          }));
+        }
+      }, 900);
+    }
+  };
 
   const enviarMensaje = ({ emisor, mensaje }) => {
     return new Promise((resolve, reject) => {
@@ -84,7 +131,9 @@ export const useMensajesChat = (idSolicitud) => {
     error,
     enviando,
     conectado,
+    usuarioEscribiendo,
     recargar: cargarHistorial,
-    enviarMensaje
+    enviarMensaje,
+    informarEscribiendo
   };
 };
