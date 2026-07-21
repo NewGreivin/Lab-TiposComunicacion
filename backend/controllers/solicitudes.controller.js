@@ -1,4 +1,5 @@
 import { conectarCliente, emitirEvento } from "../common/sseManager.js";
+import { emitirASala } from "../common/wsManager.js";
 import { registrarEspera, removerCliente, notificarCambio } from "../common/longPolling.js";
 import solicitudesService from "../services/solicitudes.service.js";
 import correoService from "../services/correo.service.js";
@@ -97,6 +98,11 @@ class SolicitudesController {
                 req.params.id,
                 actualizarEstadoDto(req.body).estado
             );
+
+            emitirASala(req.params.id, {
+                tipo: "cambio-estado",
+                data: solicitud
+            });
 
             notificarCambio(req.params.id, solicitud); //Etapa 4
 

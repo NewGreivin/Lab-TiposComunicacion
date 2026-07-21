@@ -23,7 +23,7 @@ function salirDeSala(idSolicitud, socket) {
     }
 }
 
-function emitirASala(idSolicitud, payload) {
+export function emitirASala(idSolicitud, payload) {
     const sala = salas.get(idSolicitud);
 
     if (!sala) return;
@@ -58,7 +58,27 @@ export function inicializarWebSocket(server) {
 
         socket.on("message", async (raw) => {
             try {
-                const { emisor, mensaje } = JSON.parse(raw);
+                const payload = JSON.parse(raw);
+
+                if (payload.tipo === "escribiendo") {
+                    if (!payload.emisor || !["Cliente", "Tecnico"].includes(payload.emisor)) {
+                        socket.send(JSON.stringify({
+                            tipo: "error",
+                            mensaje: "El emisor debe ser Cliente o Tecnico."
+                        }));
+                        return;
+                    }
+
+                    emitirASala(idSolicitud, {
+                        tipo: "escribiendo",
+                        emisor: payload.emisor,
+                        escribiendo: Boolean(payload.escribiendo)
+                    });
+
+                    return;
+                }
+
+                const { emisor, mensaje } = payload;
 
                 if (!emisor || !["Cliente", "Tecnico"].includes(emisor)) {
                     socket.send(JSON.stringify({
